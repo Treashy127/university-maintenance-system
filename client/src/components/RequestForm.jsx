@@ -20,7 +20,6 @@ function RequestForm({ fetchRequests }) {
   const { showToast } = useNotification()
 
   const handleChange = (e) => {
-
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -28,37 +27,33 @@ function RequestForm({ fetchRequests }) {
   }
 
   const handleSubmit = async (e) => {
-
     e.preventDefault()
 
     try {
-
       const token = localStorage.getItem("token")
+      const requestData = new FormData()
 
-    const requestData = new FormData()
+      requestData.append("title", formData.title)
+      requestData.append("description", formData.description)
+      requestData.append("location", formData.location)
+      requestData.append("category", formData.category)
+      requestData.append("severity", formData.severity)
 
-    requestData.append("title", formData.title)
-    requestData.append("description", formData.description)
-    requestData.append("location", formData.location)
-    requestData.append("category", formData.category)
-    requestData.append("severity", formData.severity)
-
-    if (formData.image) {
-    requestData.append("image", formData.image)
-    }
+      if (formData.image) {
+        requestData.append("image", formData.image)
+      }
 
       await axios.post(
-    "http://localhost:5000/api/requests",
-    requestData,
-    {
-        headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-        },
-    }
-    )
+        "http://localhost:5000/api/requests",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
 
-      const { showToast } = useNotification()
       showToast("Request submitted successfully", "success")
 
       setFormData({
@@ -71,12 +66,8 @@ function RequestForm({ fetchRequests }) {
       })
 
       fetchRequests()
-
     } catch (error) {
-
       console.error(error)
-
-      const { showToast } = useNotification()
       showToast("Failed to submit request", "error")
     }
   }
