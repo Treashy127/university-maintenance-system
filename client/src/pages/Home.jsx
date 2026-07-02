@@ -4,45 +4,52 @@ function Home() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-sky-50 to-white">
-      <div className="w-full max-w-3xl mx-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 bg-white shadow-xl rounded-2xl overflow-hidden">
-
-            <div className="hidden md:flex flex-col items-center justify-center bg-gradient-to-b from-blue-700 to-indigo-600 text-white p-10">
-            <h1 className="text-4xl font-extrabold mb-4 text-center">CampusCare</h1>
-            <p className="text-lg mb-4 text-center">Maintenance & Requests Management</p>
-            <div className="text-sm opacity-90 max-w-xs text-center">Streamline campus maintenance requests, track status in real-time, and collaborate with your team effortlessly.</div>
+    <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-5xl items-center justify-center">
+        <div className="grid w-full overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900/95 shadow-[0_30px_90px_-30px_rgba(2,6,23,0.95)] md:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative hidden flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-600 via-slate-900 to-sky-500 p-10 text-white md:flex">
+            <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute bottom-0 left-0 h-44 w-44 rounded-full bg-sky-400/20 blur-3xl" />
+            <div className="relative z-10 text-center">
+              <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-slate-100">
+                CampusCare
+              </div>
+              <h1 className="mt-6 text-3xl font-semibold">Maintenance made simple</h1>
+              <p className="mt-3 max-w-xs text-sm leading-7 text-slate-200">Streamline campus maintenance requests, track progress in real time, and coordinate work from a single dashboard.</p>
+            </div>
           </div>
 
-          <div className="p-8 md:p-12 flex flex-col justify-center">
-            <div className="max-w-md mx-auto w-full">
-              <h2 className="text-3xl font-bold text-slate-800 text-center mb-2">Welcome to CampusCare</h2>
-              <p className="text-center text-slate-600 text-sm mb-8">Manage maintenance requests and keep your campus running smoothly.</p>
+          <div className="p-8 sm:p-10 md:p-12">
+            <div className="mx-auto max-w-md">
+              <div className="mb-8 text-center md:text-left">
+                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-400">Welcome</p>
+                <h2 className="mt-3 text-3xl font-semibold text-white">Welcome to CampusCare</h2>
+                <p className="mt-2 text-sm text-slate-400">Manage maintenance requests and keep your campus running smoothly.</p>
+              </div>
 
               <div className="space-y-4">
                 <button
                   onClick={() => navigate('/login')}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium transition"
+                  className="w-full rounded-[1rem] bg-gradient-to-r from-indigo-500 to-sky-500 px-4 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:opacity-90"
                 >
                   Sign In
                 </button>
 
                 <button
                   onClick={() => navigate('/register')}
-                  className="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 p-3 rounded-lg font-medium transition"
+                  className="w-full rounded-[1rem] border border-slate-700 bg-slate-950/70 px-4 py-3 font-semibold text-slate-200 transition hover:bg-slate-800"
                 >
                   Create Account
                 </button>
               </div>
 
-              <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-                <p className="text-xs text-slate-600 text-center">
-                  <span className="font-medium">New to CampusCare?</span> Create an account to submit and track maintenance requests. Already have an account? Sign in to get started.
+              <div className="mt-6 rounded-[1rem] border border-slate-800 bg-slate-950/70 p-4">
+                <p className="text-center text-sm text-slate-400">
+                  <span className="font-medium text-slate-200">New to CampusCare?</span> Create an account to submit and track maintenance requests. Already have an account? Sign in to get started.
                 </p>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
