@@ -45,24 +45,34 @@ function Dashboard() {
 
     if (!token) {
       navigate("/")
-      return
-    }
+                          ) : (
+                          request.user_id === user?.id && (
+                            <>
+                              <div className="grid gap-3 sm:grid-cols-2 pt-4">
+                                <button
+                                  onClick={() => editRequest(request)}
+                                  className="rounded-2xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400"
+                                >
+                                  Edit Request
+                                </button>
+                                <button
+                                  onClick={() => deleteRequest(request.id)}
+                                  className="rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+                                >
+                                  Delete Request
+                                </button>
+                              </div>
 
-    const loadRequests = async () => {
-      await fetchRequests()
-    }
-
-    loadRequests()
-
-  }, [navigate])
-
-  const updateStatus = async (id, status, technician_assigned) => {
-  try {
-    const token = localStorage.getItem("token")
-    // If a technician is being assigned and the status isn't already In Progress
-    // or Resolved, automatically mark the request as In Progress.
-    let newStatus = status
-    if (technician_assigned && technician_assigned !== "" && status !== "In Progress" && status !== "Resolved") {
+                              <div className="mt-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4">
+                                <p className="text-sm text-slate-400">Current status: <span className="font-semibold text-white">{request.status || 'Status'}</span></p>
+                                <p className="mt-1 text-sm text-slate-400">Assigned to: <span className="font-semibold text-white">{request.technician_assigned || 'Unassigned'}</span></p>
+                                {request.technician_assigned && request.status === 'In Progress' && (
+                                  <p className="mt-2 text-sm text-emerald-400">Your request is being handled.</p>
+                                )}
+                              </div>
+                            </>
+                          )
+                        )
       newStatus = "In Progress"
     }
 
@@ -538,9 +548,10 @@ function Dashboard() {
                             <div className="grid gap-3 sm:grid-cols-2">
                               <select
                                 onChange={(e) => updateStatus(request.id, e.target.value, request.technician_assigned)}
-                                value={request.status}
+                                value={request.status || ""}
                                 className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100"
                               >
+                                <option value="" disabled>Status</option>
                                 <option value="Pending">Pending</option>
                                 <option value="In Progress">In Progress</option>
                                 <option value="Resolved">Resolved</option>
@@ -550,7 +561,7 @@ function Dashboard() {
                                 value={request.technician_assigned || ""}
                                 className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100"
                               >
-                                <option value="">Assign Technician</option>
+                                <option value="" disabled>Assign Technician</option>
                                 {technicians.map(tech => <option key={tech} value={tech}>{tech}</option>)}
                               </select>
                             </div>
