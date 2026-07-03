@@ -314,7 +314,9 @@ function Dashboard() {
                   <p className="text-sm uppercase tracking-[0.24em] text-slate-400">Need a closer look?</p>
                   <div className="mt-4 flex flex-col gap-3">
                     <NavLink to="/dashboard/insights" className="rounded-[1rem] bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-slate-700">Open insights</NavLink>
-                    <NavLink to="/dashboard/submit" className="rounded-[1rem] bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-slate-700">Open submit request</NavLink>
+                    {user?.role !== 'admin' && (
+                      <NavLink to="/dashboard/submit" className="rounded-[1rem] bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-slate-700">Open submit request</NavLink>
+                    )}
                     <NavLink to="/dashboard/portfolio" className="rounded-[1rem] bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400">Open portfolio</NavLink>
                   </div>
                 </div>
