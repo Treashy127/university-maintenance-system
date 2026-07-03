@@ -79,38 +79,17 @@ function Dashboard() {
       showToast("Failed to update status", "error")
     }
   }
-            Authorization: `Bearer ${token}`,
-          },
 
-          body: JSON.stringify({ status: newStatus, technician_assigned }),
-        }
-      )
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        console.error('Status update failed', res.status, body)
-        // Revert on failure
-        setRequests(previousRequests)
-        showToast(body.message || 'Failed to update status', 'error')
-        return
-      }
-
-      // Refresh to sync with server
-      await fetchRequests()
-    } catch (err) {
-      console.error('Status update error', err)
-      setRequests(previousRequests)
-      showToast(err.message || 'Failed to update status', 'error')
-      return
-    }
-
-      } catch (error) {
-
-        console.error(error)
-
-        showToast("Failed to update status", "error")
-      }
-    }
+  const editRequest = (request) => {
+    setEditingId(request.id)
+    setEditFormData({
+      title: request.title,
+      description: request.description,
+      location: request.location,
+      category: request.category,
+      severity: request.severity,
+    })
+  }
 
   const editRequest = (request) => {
     setEditingId(request.id)
