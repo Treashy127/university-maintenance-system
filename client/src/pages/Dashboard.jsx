@@ -8,87 +8,77 @@ import { getRequests } from "../services/requestService"
 
 function Dashboard() {
 
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { showToast, showConfirm } = useNotification()
-
-  const [requests, setRequests] = useState([])
-  const [editingId, setEditingId] = useState(null)
-  const [editFormData, setEditFormData] = useState({})
-
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  )
-
-  const categories = ["IT Support", "Electrical", "Plumbing", "Carpentry", "General Maintenance", "Other"]
-  const severities = ["Low", "Medium", "High", "Uncertain"]
-  const technicians = ["IT Department", "Electrical Team", "Plumbing Team", "Carpentry Team"]
-
-  const fetchRequests = async () => {
-
-    try {
-
-      const data = await getRequests()
-
-      setRequests(data)
-
-    } catch (error) {
-
-      console.error(error)
-      showToast("Failed to fetch requests", "error")
-    }
-  }
-
   useEffect(() => {
 
     const token = localStorage.getItem("token")
 
     if (!token) {
       navigate("/")
-                          ) : (
-                          request.user_id === user?.id && (
-                            <>
-                              <div className="grid gap-3 sm:grid-cols-2 pt-4">
-                                <button
-                                  onClick={() => editRequest(request)}
-                                  className="rounded-2xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400"
-                                >
-                                  Edit Request
-                                </button>
-                                <button
-                                  onClick={() => deleteRequest(request.id)}
-                                  className="rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
-                                >
-                                  Delete Request
-                                </button>
-                              </div>
-
-                              <div className="mt-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-                                <p className="text-sm text-slate-400">Current status: <span className="font-semibold text-white">{request.status || 'Status'}</span></p>
-                                <p className="mt-1 text-sm text-slate-400">Assigned to: <span className="font-semibold text-white">{request.technician_assigned || 'Unassigned'}</span></p>
-                                {request.technician_assigned && request.status === 'In Progress' && (
-                                  <p className="mt-2 text-sm text-emerald-400">Your request is being handled.</p>
-                                )}
-                              </div>
-                            </>
-                          )
-                        )
-      newStatus = "In Progress"
+      return
     }
 
-    // Optimistic UI update: update local state immediately
-    const previousRequests = [...requests]
-    setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus, technician_assigned: technician_assigned || r.technician_assigned } : r))
+    const loadRequests = async () => {
+      await fetchRequests()
+    }
 
+    loadRequests()
+
+  }, [navigate])
+
+  const updateStatus = async (id, status, technician_assigned) => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/requests/${id}/status`,
-        {
-          method: "PUT",
+      const token = localStorage.getItem("token")
 
-          headers: {
-            "Content-Type": "application/json",
+      // If a technician is being assigned and the status isn't already In Progress
+      // or Resolved, automatically mark the request as In Progress.
+      let newStatus = status
+      if (technician_assigned && technician_assigned !== "" && status !== "In Progress" && status !== "Resolved") {
+        newStatus = "In Progress"
+      }
 
+      // Optimistic UI update: update local state immediately
+      const previousRequests = [...requests]
+      setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus, technician_assigned: technician_assigned || r.technician_assigned } : r))
+
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/requests/${id}/status`,
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type": "application/json",
+
+              Authorization: `Bearer ${token}`,
+            },
+
+            body: JSON.stringify({ status: newStatus, technician_assigned }),
+          }
+        )
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          console.error('Status update failed', res.status, body)
+          // Revert on failure
+          setRequests(previousRequests)
+          showToast(body.message || 'Failed to update status', 'error')
+          return
+        }
+
+        // Refresh to sync with server
+        await fetchRequests()
+      } catch (err) {
+        console.error('Status update error', err)
+        setRequests(previousRequests)
+        showToast(err.message || 'Failed to update status', 'error')
+        return
+      }
+
+    } catch (error) {
+      console.error(error)
+      showToast("Failed to update status", "error")
+    }
+  }
             Authorization: `Bearer ${token}`,
           },
 
