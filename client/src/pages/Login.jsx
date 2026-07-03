@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useNotification } from "../context/NotificationContext"
-import { loginUser, requestPasswordReset, resetPassword } from "../services/authService"
+import { loginUser, requestPasswordReset, verifyRecoveryAnswers, resetPassword } from "../services/authService"
 
 function Login() {
 
@@ -17,8 +17,10 @@ function Login() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [showRecovery, setShowRecovery] = useState(false)
   const [recoveryEmail, setRecoveryEmail] = useState("")
-  const [recoveryCode, setRecoveryCode] = useState("")
-  const [newRecoveryPassword, setNewRecoveryPassword] = useState("")
+  const [recoveryQuestions, setRecoveryQuestions] = useState(null)
+  const [recoveryAnswers, setRecoveryAnswers] = useState(["", "", ""])
+  const [recoveryUserId, setRecoveryUserId] = useState(null)
+  const [recoveryPassword, setRecoveryPassword] = useState("")
   const [recoveryMessage, setRecoveryMessage] = useState("")
   const [recoveryError, setRecoveryError] = useState("")
   const [recoveryStep, setRecoveryStep] = useState("request")
@@ -86,24 +88,40 @@ function Login() {
     try {
       if (recoveryStep === "request") {
         const response = await requestPasswordReset(recoveryEmail || formData.email)
-        setRecoveryMessage(response.message)
-        if (response.recoveryCode) {
-          setRecoveryCode(response.recoveryCode)
+        setRecoveryQuestions(response.questions)
+        setRecoveryUserId(response.userId)
+        setRecoveryStep("verify")
+        setRecoveryMessage("Answer the recovery questions to continue.")
+        return
+      }
+
+      if (recoveryStep === "verify") {
+        const response = await verifyRecoveryAnswers({
+          userId: recoveryUserId,
+          answers: recoveryAnswers,
+        })
+
+        if (response.verified) {
+          setRecoveryStep("reset")
+          setRecoveryMessage("Recovery verified. Enter a new password.")
+          return
         }
-        setRecoveryStep("reset")
+
+        setRecoveryError("Incorrect answers")
         return
       }
 
       const response = await resetPassword({
-        email: recoveryEmail || formData.email,
-        code: recoveryCode,
-        newPassword: newRecoveryPassword,
+        userId: recoveryUserId,
+        password: recoveryPassword,
       })
 
       setRecoveryMessage(response.message)
       setShowRecovery(false)
-      setRecoveryCode("")
-      setNewRecoveryPassword("")
+      setRecoveryQuestions(null)
+      setRecoveryAnswers(["", "", ""])
+      setRecoveryUserId(null)
+      setRecoveryPassword("")
       setRecoveryStep("request")
       setFormData((prev) => ({ ...prev, password: "" }))
       showToast("Password reset successfully", "success")
@@ -208,7 +226,7 @@ function Login() {
               {showRecovery && (
                 <div className="mb-4 rounded-[1rem] border border-slate-800 bg-slate-950/80 p-4">
                   <p className="text-sm font-semibold text-slate-200">Recover your account</p>
-                  <p className="mt-2 text-sm text-slate-400">Enter your email to receive a one-time recovery code and create a new password.</p>
+                  <p className="mt-2 text-sm text-slate-400">Enter your email, answer your recovery questions, and reset your password.</p>
 
                   <form onSubmit={handleRecoverySubmit} className="mt-4 space-y-3">
                     <input
@@ -220,28 +238,39 @@ function Login() {
                       required
                     />
 
-                    {recoveryStep === "reset" && (
+                    {recoveryStep === "verify" && recoveryQuestions && (
                       <>
-                        <div className="rounded-[0.85rem] border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-300">
-                          Recovery code: <span className="font-semibold">{recoveryCode || "Check your response"}</span>
-                        </div>
-                        <input
-                          type="text"
-                          value={recoveryCode}
-                          onChange={(e) => setRecoveryCode(e.target.value)}
-                          placeholder="Enter recovery code"
-                          className="w-full rounded-[0.95rem] border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-indigo-400"
-                          required
-                        />
-                        <input
-                          type="password"
-                          value={newRecoveryPassword}
-                          onChange={(e) => setNewRecoveryPassword(e.target.value)}
-                          placeholder="New password"
-                          className="w-full rounded-[0.95rem] border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-indigo-400"
-                          required
-                        />
+                        {["question_1", "question_2", "question_3"].map((key, index) => (
+                          <div key={key}>
+                            <label className="mb-2 block text-sm font-medium text-slate-300">
+                              {recoveryQuestions[key]}
+                            </label>
+                            <input
+                              type="text"
+                              value={recoveryAnswers[index]}
+                              onChange={(e) => {
+                                const updated = [...recoveryAnswers]
+                                updated[index] = e.target.value
+                                setRecoveryAnswers(updated)
+                              }}
+                              placeholder="Your answer"
+                              className="w-full rounded-[0.95rem] border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-indigo-400"
+                              required
+                            />
+                          </div>
+                        ))}
                       </>
+                    )}
+
+                    {recoveryStep === "reset" && (
+                      <input
+                        type="password"
+                        value={recoveryPassword}
+                        onChange={(e) => setRecoveryPassword(e.target.value)}
+                        placeholder="New password"
+                        className="w-full rounded-[0.95rem] border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-indigo-400"
+                        required
+                      />
                     )}
 
                     {recoveryMessage && <p className="text-sm text-emerald-400">{recoveryMessage}</p>}
@@ -251,7 +280,11 @@ function Login() {
                       type="submit"
                       className="w-full rounded-[0.95rem] border border-indigo-500/40 bg-indigo-500/10 px-3 py-2.5 text-sm font-semibold text-indigo-300 transition hover:bg-indigo-500/20"
                     >
-                      {recoveryStep === "request" ? "Send recovery code" : "Reset password"}
+                      {recoveryStep === "request"
+                        ? "Continue"
+                        : recoveryStep === "verify"
+                        ? "Verify answers"
+                        : "Reset password"}
                     </button>
                   </form>
                 </div>
@@ -296,7 +329,22 @@ function Login() {
                     />
                     <span>Save this account on this device</span>
                   </label>
-                  <button type="button" onClick={() => { setShowRecovery((prev) => !prev); setRecoveryError(""); setRecoveryMessage(""); setRecoveryStep("request"); setRecoveryCode(""); setNewRecoveryPassword(""); }} className="text-indigo-400 transition hover:text-indigo-300">Forgot?</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRecovery((prev) => !prev)
+                      setRecoveryError("")
+                      setRecoveryMessage("")
+                      setRecoveryStep("request")
+                      setRecoveryQuestions(null)
+                      setRecoveryAnswers(["", "", ""])
+                      setRecoveryUserId(null)
+                      setRecoveryPassword("")
+                    }}
+                    className="text-indigo-400 transition hover:text-indigo-300"
+                  >
+                    Forgot?
+                  </button>
                 </div>
 
                 <p className="text-xs leading-6 text-slate-500">

@@ -13,11 +13,6 @@ function Register() {
     email: "",
     password: "",
   })
-  const [recoveryQuestions, setRecoveryQuestions] = useState([
-    { question: "What is your favorite school subject?", answer: "" },
-    { question: "What is the name of your first pet?", answer: "" },
-    { question: "What city were you born in?", answer: "" },
-  ])
 
   const handleChange = (e) => {
     setFormData({
@@ -26,48 +21,11 @@ function Register() {
     })
   }
 
-  const handleRecoveryAnswerChange = (index, value) => {
-    setRecoveryQuestions((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, answer: value } : item))
-  }
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
 
-    try {
-      const payload = {
-        ...formData,
-        email: formData.email.trim().toLowerCase(),
-        recoveryQuestions,
-      }
-
-      const data = await registerUser(payload)
-
-      localStorage.setItem(
-        "token",
-        data.token
-      )
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      )
-
-      showToast(
-        "Registration successful",
-        "success"
-      )
-
-      navigate("/dashboard")
-
-    } catch (error) {
-
-      console.error(error)
-
-      showToast(
-        "Registration failed",
-        "error"
-      )
-    }
+    sessionStorage.setItem("registerData", JSON.stringify(formData))
+    navigate("/register/recovery", { state: { formData } })
   }
 
   return (
@@ -134,30 +92,11 @@ function Register() {
                   />
                 </div>
 
-                <div className="rounded-[1rem] border border-slate-800 bg-slate-950/70 p-4">
-                  <p className="text-sm font-semibold text-slate-200">Recovery questions</p>
-                  <p className="mt-2 text-sm text-slate-400">Choose answers you can remember. These will help recover your account later if you forget your password.</p>
-
-                  {recoveryQuestions.map((item, index) => (
-                    <div key={item.question} className="mt-4 space-y-2">
-                      <label className="block text-sm font-medium text-slate-300">{item.question}</label>
-                      <input
-                        type="text"
-                        value={item.answer}
-                        onChange={(e) => handleRecoveryAnswerChange(index, e.target.value)}
-                        placeholder="Your answer"
-                        className="w-full rounded-[0.95rem] border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:border-indigo-400"
-                        required
-                      />
-                    </div>
-                  ))}
-                </div>
-
                 <button
                   type="submit"
                   className="w-full rounded-[1rem] bg-gradient-to-r from-indigo-500 to-sky-500 px-4 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:opacity-90"
                 >
-                  Register
+                  Continue to recovery questions
                 </button>
 
                 <div className="pt-2 text-center text-sm text-slate-400">

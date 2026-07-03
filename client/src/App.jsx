@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
+import RegisterRecovery from "./pages/RegisterRecovery"
 import ForgotPassword from "./pages/ForgotPassword"
 import Dashboard from "./pages/Dashboard"
 import NotFound from "./pages/NotFound"
@@ -17,6 +18,8 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+
+        <Route path="/register/recovery" element={<RegisterRecovery />} />
 
         <Route
           path="/forgot-password"

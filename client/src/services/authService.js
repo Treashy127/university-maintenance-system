@@ -13,6 +13,11 @@ export const requestPasswordReset = async (email) => {
   return response.data
 }
 
+export const verifyRecoveryAnswers = async (payload) => {
+  const response = await API.post("/verify-recovery", payload)
+  return response.data
+}
+
 export const resetPassword = async (payload) => {
   const response = await API.post("/reset-password", payload)
   return response.data
